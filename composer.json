@@ -1,0 +1,17 @@
+{
+    "name": "mente/php-amqp-benchmark",
+    "description": "Benchmark of available amqp libraries in PHP using phpbench",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Alex Vasilenko",
+            "email": "aa.vasilenko@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "phpbench/phpbench": "^0.12.2",
+        "php-amqplib/php-amqplib": "^2.6"
+    }
+}
