@@ -11,12 +11,12 @@ benchmark-in-docker: build
 	docker run -it --rm -v $(PWD):/bench --link=$(DOCKER_NAME) rabbitmq-benchmark /bench/vendor/bin/phpbench run benchmark/ConsumerBench.php --revs=$(REVS) --iterations=$(ITERATIONS) --report=$(REPORT)
 	@make stop-docker
 
-benchmark-in-host:
-	@make start-docker
+benchmark-in-host: start-docker benchmark stop-docker
+
+benchmark:
 	./vendor/bin/phpbench run benchmark/ProducerBench.php --revs=$(REVS) --iterations=$(ITERATIONS) --report=$(REPORT)
 	./vendor/bin/phpbench run benchmark/ConsumerBench.php --revs=$(REVS) --iterations=$(ITERATIONS) --report=$(REPORT)
-	@make stop-docker
-
+	
 build:
 	docker build -t rabbitmq-benchmark .
 	docker run --rm -v $(PWD):/app composer/composer --ignore-platform-reqs install
