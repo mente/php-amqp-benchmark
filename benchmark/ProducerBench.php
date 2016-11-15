@@ -1,6 +1,9 @@
 <?php
 
+use OldSound\RabbitMqBundle\RabbitMq\Producer;
 use PhpAmqpLib\Connection\AbstractConnection;
+use PhpAmqpLib\Connection\AMQPLazyConnection;
+use PhpAmqpLib\Connection\AMQPLazySocketConnection;
 use PhpAmqpLib\Connection\AMQPSocketConnection;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
@@ -34,12 +37,12 @@ class ProducerBench
             [
                 'messages' => 1,
             ],
-            [
-                'messages' => 10,
-            ],
-            [
-                'messages' => 100,
-            ],
+//            [
+//                'messages' => 10,
+//            ],
+//            [
+//                'messages' => 100,
+//            ],
         ];
     }
 
@@ -84,7 +87,6 @@ class ProducerBench
      */
     public function benchStreamConnection($params)
     {
-        /** @var AbstractConnection $conn */
         $conn = new AMQPStreamConnection(HOST, PORT, USER, PASS, VHOST, false, 'AMQPLAIN', null, 'en_US', 3, 3, null, $params['alive']);
         $this->produceWithLibConnection($conn, $params);
     }
@@ -96,7 +98,6 @@ class ProducerBench
      */
     public function benchSocketConnection($params)
     {
-        /** @var AbstractConnection $conn */
         $conn = new AMQPSocketConnection(HOST, PORT, USER, PASS, VHOST, false, 'AMQPLAIN', null, 'en_US', 3, $params['alive']);
         $this->produceWithLibConnection($conn, $params);
     }
@@ -150,6 +151,50 @@ class ProducerBench
     }
 
     /**
+     * @ParamProviders({"messageLength", "keepAlive", "messagesCount"})
+     *
+     * @param array $params
+     */
+    public function benchSocketConnectionInBundle($params)
+    {
+        $conn = new AMQPSocketConnection(HOST, PORT, USER, PASS, VHOST, false, 'AMQPLAIN', null, 'en_US', 3, $params['alive']);
+        $this->produceWithLibConnectionViaBundle($conn, $params);
+    }
+
+    /**
+     * @ParamProviders({"messageLength", "keepAlive", "messagesCount"})
+     *
+     * @param array $params
+     */
+    public function benchStreamConnectionInBundle($params)
+    {
+        $conn = new AMQPStreamConnection(HOST, PORT, USER, PASS, VHOST, false, 'AMQPLAIN', null, 'en_US', 3, 3, null, $params['alive']);
+        $this->produceWithLibConnectionViaBundle($conn, $params);
+    }
+
+    /**
+     * @ParamProviders({"messageLength", "keepAlive", "messagesCount"})
+     *
+     * @param array $params
+     */
+    public function benchLazyStreamConnectionInBundle($params)
+    {
+        $conn = new AMQPLazyConnection(HOST, PORT, USER, PASS, VHOST, false, 'AMQPLAIN', null, 'en_US', 3, 3, null, $params['alive']);
+        $this->produceWithLibConnectionViaBundle($conn, $params);
+    }
+
+    /**
+     * @ParamProviders({"messageLength", "keepAlive", "messagesCount"})
+     *
+     * @param array $params
+     */
+    public function benchLazySocketConnectionInBundle($params)
+    {
+        $conn = new AMQPLazySocketConnection(HOST, PORT, USER, PASS, VHOST, false, 'AMQPLAIN', null, 'en_US', 3, 3, null, $params['alive']);
+        $this->produceWithLibConnectionViaBundle($conn, $params);
+    }
+
+    /**
      * @param AbstractConnection $conn
      * @param array              $params
      */
@@ -173,5 +218,28 @@ class ProducerBench
 
         $ch->close();
         $conn->close();
+    }
+
+    private function produceWithLibConnectionViaBundle(AbstractConnection $conn, $params)
+    {
+        $producer = new Producer($conn);
+        $producer->setExchangeOptions([
+            'name' => $this->exchangeName,
+            'type' => 'direct',
+        ]);
+        $producer->setQueueOptions([
+            'name' => $this->queueName,
+        ]);
+
+        $body = '';
+        for ($i = 0; $i < $params['length']; $i++) {
+            $body .= ord($i % 255);
+        }
+
+        for ($i = 0; $i < $params['messages']; $i++) {
+            $producer->publish($body);
+        }
+
+        unset($producer);
     }
 }

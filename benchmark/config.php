@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-define('HOST', 'localhost');
+define('HOST', 'rabbitmq_amqplib_ci');
 define('PORT', 5672);
 define('USER', 'guest');
 define('PASS', 'guest');
