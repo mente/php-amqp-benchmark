@@ -1,5 +1,6 @@
 <?php
 
+use M6Web\Bundle\AmqpBundle\Factory\ProducerFactory;
 use OldSound\RabbitMqBundle\RabbitMq\Producer;
 use PhpAmqpLib\Connection\AbstractConnection;
 use PhpAmqpLib\Connection\AMQPLazyConnection;
@@ -110,13 +111,7 @@ class ProducerBench
     public function benchExtension($params)
     {
         // Create a connection
-        $cnn = new \AMQPConnection();
-        $cnn->setHost(HOST);
-        $cnn->setPort(PORT);
-        $cnn->setLogin(USER);
-        $cnn->setPassword(PASS);
-        $cnn->setVhost(VHOST);
-        $cnn->connect();
+        $cnn = $this->getExtensionConnection();
 
         // Create a channel
         $ch = new \AMQPChannel($cnn);
@@ -195,6 +190,38 @@ class ProducerBench
     }
 
     /**
+     * @ParamProviders({"messageLength", "messagesCount"})
+     *
+     * @param array $params
+     */
+    public function benchExtensionInBundle($params)
+    {
+        // Create a connection
+        $conn = $this->getExtensionConnection();
+
+        $factory = new ProducerFactory(AMQPChannel::class, AMQPExchange::class, AMQPQueue::class);
+        $exchangeOptions = [
+            'type' => 'direct',
+            'durable' => true,
+            'name' => $this->exchangeName,
+        ];
+        $queueOptions = [
+            'durable' => true,
+            'name' => $this->queueName,
+        ];
+
+        $producer = $factory->get(Producer::class, $conn, $exchangeOptions, $queueOptions);
+        $body = '';
+        for ($i = 0; $i < $params['length']; $i++) {
+            $body .= ord($i % 255);
+        }
+
+        for ($i = 0; $i < $params['messages']; $i++) {
+            $producer->publishMessage($body);
+        }
+    }
+
+    /**
      * @param AbstractConnection $conn
      * @param array              $params
      */
@@ -241,5 +268,21 @@ class ProducerBench
         }
 
         unset($producer);
+    }
+
+    /**
+     * @return AMQPConnection
+     */
+    private function getExtensionConnection()
+    {
+        $cnn = new \AMQPConnection();
+        $cnn->setHost(HOST);
+        $cnn->setPort(PORT);
+        $cnn->setLogin(USER);
+        $cnn->setPassword(PASS);
+        $cnn->setVhost(VHOST);
+        $cnn->connect();
+
+        return $cnn;
     }
 }
