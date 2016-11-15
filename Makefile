@@ -19,6 +19,7 @@ benchmark-in-host:
 
 build:
 	docker build -t rabbitmq-benchmark .
+	docker run --rm -v $(PWD):/app composer/composer --ignore-platform-reqs install
 
 start-docker:
 	docker run -d --name $(DOCKER_NAME) -p 5672:5672 rabbitmq:latest && sleep 10
