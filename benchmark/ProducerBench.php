@@ -219,6 +219,8 @@ class ProducerBench
         for ($i = 0; $i < $params['messages']; $i++) {
             $producer->publishMessage($body);
         }
+
+        $conn->disconnect();
     }
 
     /**
