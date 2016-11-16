@@ -1,5 +1,6 @@
 <?php
 
+use Bunny\Client;
 use M6Web\Bundle\AmqpBundle\Factory\ProducerFactory;
 use OldSound\RabbitMqBundle\RabbitMq\Producer;
 use PhpAmqpLib\Connection\AbstractConnection;
@@ -10,6 +11,7 @@ use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 use PhpBench\Benchmark\Metadata\Annotations\BeforeMethods;
 use PhpBench\Benchmark\Metadata\Annotations\ParamProviders;
+use M6Web\Bundle\AmqpBundle\Amqp\Producer as ExtProducer;
 
 /**
  * @BeforeMethods({"cleanup"})
@@ -132,7 +134,7 @@ class ProducerBench
         // Bind it on the exchange to routing.key
         $q->bind($this->exchangeName);
 
-        $body = 'a';
+        $body = '';
         for ($i = 0; $i < $params['length']; $i++) {
             $body .= ord($i % 255);
         }
@@ -143,6 +145,38 @@ class ProducerBench
 
         //Disconnect
         $cnn->disconnect();
+    }
+
+    /**
+     * @ParamProviders({"messageLength", "messagesCount"})
+     *
+     * @param array $params
+     */
+    public function benchBunny($params)
+    {
+        $connection = [
+            'host'      => HOST,
+            'vhost'     => VHOST,
+            'user'      => USER,
+            'password'  => PASS,
+        ];
+
+        $bunny = new Client($connection);
+        $bunny->connect();
+
+        $channel = $bunny->channel();
+        $channel->queueDeclare($this->queueName, false, true);
+
+        $body = '';
+        for ($i = 0; $i < $params['length']; $i++) {
+            $body .= ord($i % 255);
+        }
+
+        for ($i = 0; $i < $params['messages']; $i++) {
+            $channel->publish($body, [], $this->exchangeName);
+        }
+
+        $bunny->disconnect();
     }
 
     /**
@@ -204,13 +238,16 @@ class ProducerBench
             'type' => 'direct',
             'durable' => true,
             'name' => $this->exchangeName,
+            'arguments' => [],
         ];
         $queueOptions = [
             'durable' => true,
             'name' => $this->queueName,
+            'arguments' => [],
+            'routing_keys' => [],
         ];
 
-        $producer = $factory->get(Producer::class, $conn, $exchangeOptions, $queueOptions);
+        $producer = $factory->get(ExtProducer::class, $conn, $exchangeOptions, $queueOptions);
         $body = '';
         for ($i = 0; $i < $params['length']; $i++) {
             $body .= ord($i % 255);
