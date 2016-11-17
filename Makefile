@@ -5,7 +5,7 @@ REVS=1000
 REPORT=aggregate
 
 
-benchmark-in-docker: build stop-docker
+benchmark-in-docker: build
 	@make start-docker
 	docker run -it --rm -v `pwd`:/bench --link=$(DOCKER_NAME) rabbitmq-benchmark /bench/vendor/bin/phpbench run benchmark/ProducerBench.php --revs=$(REVS) --iterations=$(ITERATIONS) --report=$(REPORT)
 	docker run -it --rm -v `pwd`:/bench --link=$(DOCKER_NAME) rabbitmq-benchmark /bench/vendor/bin/phpbench run benchmark/ConsumerBench.php --revs=$(REVS) --iterations=$(ITERATIONS) --report=$(REPORT)
