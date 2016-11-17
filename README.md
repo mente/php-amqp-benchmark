@@ -34,19 +34,21 @@ Running with 1000 revs and 5 iterations on idle server in docker
 +---------------+-----------------------------------+--------+---------------------------------------------+------+-----+-------------+--------------+--------------+--------------+--------------+-----------+--------+---------+
 | benchmark     | subject                           | groups | params                                      | revs | its | mem_peak    | best         | mean         | mode         | worst        | stdev     | rstdev | diff    |
 +---------------+-----------------------------------+--------+---------------------------------------------+------+-----+-------------+--------------+--------------+--------------+--------------+-----------+--------+---------+
-| ProducerBench | benchStreamConnection             |        | {"length":10000,"alive":true,"messages":1}  | 1000 | 5   | 15,595,040b | 83,399.591μs | 83,524.389μs | 83,538.585μs | 83,631.702μs | 78.470μs  | 0.09%  | +96.21% |
-| ProducerBench | benchStreamConnection             |        | {"length":10000,"alive":false,"messages":1} | 1000 | 5   | 15,603,232b | 83,263.452μs | 83,552.294μs | 83,605.351μs | 83,751.470μs | 159.134μs | 0.19%  | +96.21% |
-| ProducerBench | benchSocketConnection             |        | {"length":10000,"alive":true,"messages":1}  | 1000 | 5   | 14,966,592b | 3,019.856μs  | 3,429.933μs  | 3,216.970μs  | 3,970.095μs  | 359.444μs | 10.48% | +7.72%  |
-| ProducerBench | benchSocketConnection             |        | {"length":10000,"alive":false,"messages":1} | 1000 | 5   | 14,966,592b | 2,976.760μs  | 3,744.477μs  | 3,263.736μs  | 5,692.399μs  | 992.943μs | 26.52% | +15.47% |
-| ProducerBench | benchExtension                    |        | {"length":10000,"messages":1}               | 1000 | 5   | 1,649,720b  | 2,806.814μs  | 3,165.280μs  | 3,241.993μs  | 3,406.212μs  | 208.662μs | 6.59%  | 0.00%   |
-| ProducerBench | benchSocketConnectionInBundle     |        | {"length":10000,"alive":true,"messages":1}  | 1000 | 5   | 15,020,472b | 3,508.562μs  | 4,030.839μs  | 3,777.561μs  | 4,683.422μs  | 434.206μs | 10.77% | +21.47% |
-| ProducerBench | benchSocketConnectionInBundle     |        | {"length":10000,"alive":false,"messages":1} | 1000 | 5   | 15,020,472b | 3,167.289μs  | 3,663.262μs  | 3,900.860μs  | 4,045.169μs  | 353.297μs | 9.64%  | +13.59% |
-| ProducerBench | benchStreamConnectionInBundle     |        | {"length":10000,"alive":true,"messages":1}  | 1000 | 5   | 15,648,904b | 83,971.592μs | 84,014.088μs | 84,018.148μs | 84,043.903μs | 27.277μs  | 0.03%  | +96.23% |
-| ProducerBench | benchStreamConnectionInBundle     |        | {"length":10000,"alive":false,"messages":1} | 1000 | 5   | 15,657,096b | 84,043.417μs | 84,069.036μs | 84,082.660μs | 84,091.391μs | 19.953μs  | 0.02%  | +96.23% |
-| ProducerBench | benchLazyStreamConnectionInBundle |        | {"length":10000,"alive":true,"messages":1}  | 1000 | 5   | 15,662,896b | 83,939.590μs | 84,025.255μs | 84,031.416μs | 84,099.737μs | 55.458μs  | 0.07%  | +96.23% |
-| ProducerBench | benchLazyStreamConnectionInBundle |        | {"length":10000,"alive":false,"messages":1} | 1000 | 5   | 15,671,088b | 83,983.488μs | 84,044.554μs | 84,058.345μs | 84,104.922μs | 44.677μs  | 0.05%  | +96.23% |
-| ProducerBench | benchLazySocketConnectionInBundle |        | {"length":10000,"alive":true,"messages":1}  | 1000 | 5   | 15,034,640b | 3,390.307μs  | 3,657.892μs  | 3,507.522μs  | 4,271.147μs  | 319.875μs | 8.74%  | +13.47% |
-| ProducerBench | benchLazySocketConnectionInBundle |        | {"length":10000,"alive":false,"messages":1} | 1000 | 5   | 15,034,640b | 3,448.534μs  | 4,018.611μs  | 4,152.250μs  | 4,420.423μs  | 331.625μs | 8.25%  | +21.23% |
+| ProducerBench | benchStreamConnection             |        | {"length":10000,"alive":true,"messages":1}  | 1000 | 5   | 15,679,864b | 82,769.578μs | 83,099.127μs | 83,214.860μs | 83,403.392μs | 229.773μs | 0.28%  | +96.42% |
+| ProducerBench | benchStreamConnection             |        | {"length":10000,"alive":false,"messages":1} | 1000 | 5   | 15,688,056b | 83,055.956μs | 83,343.620μs | 83,325.739μs | 83,679.752μs | 222.186μs | 0.27%  | +96.43% |
+| ProducerBench | benchSocketConnection             |        | {"length":10000,"alive":true,"messages":1}  | 1000 | 5   | 15,051,416b | 3,196.397μs  | 3,923.715μs  | 4,324.155μs  | 4,512.115μs  | 567.925μs | 14.47% | +24.27% |
+| ProducerBench | benchSocketConnection             |        | {"length":10000,"alive":false,"messages":1} | 1000 | 5   | 15,051,416b | 3,029.927μs  | 3,912.132μs  | 4,134.947μs  | 4,349.238μs  | 470.997μs | 12.04% | +24.05% |
+| ProducerBench | benchExtension                    |        | {"length":10000,"messages":1}               | 1000 | 5   | 1,734,584b  | 2,829.156μs  | 3,148.285μs  | 3,035.734μs  | 3,647.460μs  | 275.690μs | 8.76%  | +5.62%  |
+| ProducerBench | benchBunny                        |        | {"length":10000,"messages":1}               | 1000 | 5   | 29,316,888b | 43,991.661μs | 44,041.097μs | 44,037.783μs | 44,095.487μs | 33.548μs  | 0.08%  | +93.25% |
+| ProducerBench | benchSocketConnectionInBundle     |        | {"length":10000,"alive":true,"messages":1}  | 1000 | 5   | 15,105,176b | 3,278.849μs  | 3,861.149μs  | 4,153.481μs  | 4,267.648μs  | 409.718μs | 10.61% | +23.05% |
+| ProducerBench | benchSocketConnectionInBundle     |        | {"length":10000,"alive":false,"messages":1} | 1000 | 5   | 15,105,176b | 3,220.278μs  | 3,636.562μs  | 3,742.603μs  | 3,866.545μs  | 228.185μs | 6.27%  | +18.29% |
+| ProducerBench | benchStreamConnectionInBundle     |        | {"length":10000,"alive":true,"messages":1}  | 1000 | 5   | 15,733,608b | 84,039.469μs | 84,053.974μs | 84,043.857μs | 84,075.631μs | 14.881μs  | 0.02%  | +96.47% |
+| ProducerBench | benchStreamConnectionInBundle     |        | {"length":10000,"alive":false,"messages":1} | 1000 | 5   | 15,741,800b | 83,959.722μs | 84,035.645μs | 84,040.637μs | 84,107.391μs | 49.145μs  | 0.06%  | +96.46% |
+| ProducerBench | benchLazyStreamConnectionInBundle |        | {"length":10000,"alive":true,"messages":1}  | 1000 | 5   | 15,747,600b | 83,983.349μs | 84,023.564μs | 84,033.401μs | 84,043.671μs | 21.126μs  | 0.03%  | +96.46% |
+| ProducerBench | benchLazyStreamConnectionInBundle |        | {"length":10000,"alive":false,"messages":1} | 1000 | 5   | 15,755,792b | 84,007.580μs | 84,066.051μs | 84,054.118μs | 84,139.697μs | 43.532μs  | 0.05%  | +96.47% |
+| ProducerBench | benchLazySocketConnectionInBundle |        | {"length":10000,"alive":true,"messages":1}  | 1000 | 5   | 15,119,344b | 3,555.436μs  | 4,014.462μs  | 4,002.224μs  | 4,574.670μs  | 386.679μs | 9.63%  | +25.99% |
+| ProducerBench | benchLazySocketConnectionInBundle |        | {"length":10000,"alive":false,"messages":1} | 1000 | 5   | 15,119,344b | 3,188.946μs  | 3,785.022μs  | 3,685.951μs  | 4,504.850μs  | 429.972μs | 11.36% | +21.50% |
+| ProducerBench | benchExtensionInBundle            |        | {"length":10000,"messages":1}               | 1000 | 5   | 1,734,592b  | 2,870.306μs  | 2,971.301μs  | 2,958.325μs  | 3,086.545μs  | 75.799μs  | 2.55%  | 0.00%   |
 +---------------+-----------------------------------+--------+---------------------------------------------+------+-----+-------------+--------------+--------------+--------------+--------------+-----------+--------+---------+
 ```
 
@@ -55,12 +57,12 @@ Running with 1000 revs and 5 iterations on idle server in docker
 +---------------+--------------+--------+---------------------------------------------------------------+------+-----+-------------+--------------+--------------+--------------+--------------+-----------+--------+---------+
 | benchmark     | subject      | groups | params                                                        | revs | its | mem_peak    | best         | mean         | mode         | worst        | stdev     | rstdev | diff    |
 +---------------+--------------+--------+---------------------------------------------------------------+------+-----+-------------+--------------+--------------+--------------+--------------+-----------+--------+---------+
-| ConsumerBench | benchConsume |        | {"connection":"PhpAmqpLib\\Connection\\AMQPStreamConnection"} | 1000 | 5   | 14,491,608b | 44,012.166μs | 44,327.434μs | 44,072.631μs | 45,355.548μs | 516.536μs | 1.17%  | +95.16% |
-| ConsumerBench | benchConsume |        | {"connection":"PhpAmqpLib\\Connection\\AMQPSocketConnection"} | 1000 | 5   | 14,117,280b | 2,032.960μs  | 2,147.196μs  | 2,066.253μs  | 2,326.285μs  | 117.498μs | 5.47%  | 0.00%   |
+| ConsumerBench | benchConsume |        | {"connection":"PhpAmqpLib\\Connection\\AMQPStreamConnection"} | 1000 | 5   | 14,569,304b | 44,017.694μs | 44,277.477μs | 44,050.083μs | 45,199.881μs | 461.698μs | 1.04%  | +95.07% |
+| ConsumerBench | benchConsume |        | {"connection":"PhpAmqpLib\\Connection\\AMQPSocketConnection"} | 1000 | 5   | 14,194,944b | 2,089.361μs  | 2,181.877μs  | 2,149.016μs  | 2,278.700μs  | 68.619μs  | 3.14%  | 0.00%   |
 +---------------+--------------+--------+---------------------------------------------------------------+------+-----+-------------+--------------+--------------+--------------+--------------+-----------+--------+---------+
 ```
 
 
 ## What's next
 
-Add [bunny](https://github.com/jakubkulhan/bunny) (?)
+Add [bunny](https://github.com/jakubkulhan/bunny) (?) consumer benchmarks
