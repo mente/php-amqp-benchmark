@@ -1,96 +1,107 @@
 <?php
 
+use Insomnia\Benchmark\BenchTrait;
 use PhpAmqpLib\Connection\AbstractConnection;
 use PhpAmqpLib\Connection\AMQPSocketConnection;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
-use PhpAmqpLib\Message\AMQPMessage;
-use PhpBench\Benchmark\Metadata\Annotations\BeforeClassMethods;
-use PhpBench\Benchmark\Metadata\Annotations\Iterations;
+use PhpBench\Benchmark\Metadata\Annotations\BeforeMethods;
 use PhpBench\Benchmark\Metadata\Annotations\ParamProviders;
-use PhpBench\Benchmark\Metadata\Annotations\Revs;
 
 /**
- * @BeforeClassMethods({"publishMessages"})
+ * @BeforeMethods({"cleanup", "publish"})
  */
 class ConsumerBench
 {
-    public static function publishMessages()
+    use BenchTrait;
+
+    /**
+     * @var string
+     */
+    private $exchangeName = 'bench_exchange';
+    /**
+     * @var string
+     */
+    private $queueName = 'bench_queue';
+
+    public function cleanup()
     {
-        $exchange = 'bench_exchange';
-        $queue = 'bench_queue';
-        $conn = new AMQPStreamConnection(HOST, PORT, USER, PASS, VHOST);
-        $ch = $conn->channel();
-
-        $ch->queue_delete($queue);
-        $ch->queue_declare($queue, false, false, false, false);
-
-        $ch->exchange_delete($exchange);
-        $ch->exchange_declare($exchange, 'direct', false, false, false);
-
-        $ch->queue_bind($queue, $exchange);
-
-        $msg_body = <<<EOT
-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz
-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz
-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz
-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz
-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz
-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz
-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz
-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz
-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz
-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyza
-EOT;
-
-        $msg = new AMQPMessage($msg_body);
-
-        $time = microtime(true);
-
-        $max = 10000;
-
-        // Publishes $max messages using $msg_body as the content.
-        for ($i = 0; $i < $max; $i++) {
-            $ch->basic_publish($msg, $exchange);
-        }
-
-        $ch->basic_publish(new AMQPMessage('quit'), $exchange);
-
-        $ch->close();
-        $conn->close();
+        $this->deleteQueue($this->queueName, $this->exchangeName);
     }
 
-    public function connectionClass()
+    public function publish($params)
+    {
+        $conn = new AMQPStreamConnection(HOST, PORT, USER, PASS, VHOST);
+        $this->produceWithLibConnection($conn, $params['length'], $params['messages']);
+    }
+
+    public function keepAlive()
     {
         return [
             [
-                'connection' => AMQPStreamConnection::class,
+                'alive' => true,
             ],
             [
-                'connection' => AMQPSocketConnection::class,
+                'alive' => false,
+            ]
+        ];
+    }
+
+    public function messagesCount()
+    {
+        return [
+            [
+                'messages' => 1,
+            ],
+        ];
+    }
+
+    public function messageLength()
+    {
+        return [
+            [
+                'length' => 10000,
             ]
         ];
     }
 
     /**
-     * @ParamProviders({"connectionClass"})
+     * @ParamProviders({"keepAlive", "messagesCount", "messageLength"})
      *
      * @param array $params
      */
-    public function benchConsume($params)
+    public function benchStreamConnection($params)
     {
-        $exchange = 'bench_exchange';
-        $queue = 'bench_queue';
+        $conn = new AMQPStreamConnection(HOST, PORT, USER, PASS, VHOST, false, 'AMQPLAIN', null, 'en_US', 3, 3, null, $params['alive']);
+        $this->consumeWithLibraryConnection($conn, $params);
+    }
 
-        /** @var AbstractConnection $conn */
-        $conn = new $params['connection'](HOST, PORT, USER, PASS, VHOST);
+    /**
+     * @ParamProviders({"keepAlive"})
+     *
+     * @param array $params
+     */
+    public function benchSocketConnection($params)
+    {
+        $conn = new AMQPSocketConnection(HOST, PORT, USER, PASS, VHOST, false, 'AMQPLAIN', null, 'en_US', 3, 3, null, $params['alive']);
+        $this->consumeWithLibraryConnection($conn, $params);
+    }
+
+    /**
+     * @param AbstractConnection $conn
+     * @param array              $params
+     */
+    private function consumeWithLibraryConnection(AbstractConnection $conn, $params)
+    {
         $ch = $conn->channel();
 
-        $ch->queue_declare($queue, false, false, false, false);
-        $ch->exchange_declare($exchange, 'direct', false, false, false);
-        $ch->queue_bind($queue, $exchange);
+        $ch->queue_declare($this->queueName, false, true, false, false);
+        $ch->exchange_declare($this->exchangeName, 'direct', false, true, false);
+        $ch->queue_bind($this->queueName, $this->exchangeName);
 
         $noop = function(){};
-        $ch->basic_consume($queue, '', false, true, false, false, $noop);
+        for ($i = 0; $i < $params['messages']; $i++) {
+            $ch->basic_consume($this->queueName, '', false, true, false, false, $noop);
+        }
 
         $ch->close();
         $conn->close();

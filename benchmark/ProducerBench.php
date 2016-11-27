@@ -1,6 +1,7 @@
 <?php
 
 use Bunny\Client;
+use Insomnia\Benchmark\BenchTrait;
 use M6Web\Bundle\AmqpBundle\Factory\ProducerFactory;
 use OldSound\RabbitMqBundle\RabbitMq\Producer;
 use PhpAmqpLib\Connection\AbstractConnection;
@@ -8,7 +9,6 @@ use PhpAmqpLib\Connection\AMQPLazyConnection;
 use PhpAmqpLib\Connection\AMQPLazySocketConnection;
 use PhpAmqpLib\Connection\AMQPSocketConnection;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
-use PhpAmqpLib\Message\AMQPMessage;
 use PhpBench\Benchmark\Metadata\Annotations\BeforeMethods;
 use PhpBench\Benchmark\Metadata\Annotations\ParamProviders;
 use M6Web\Bundle\AmqpBundle\Amqp\Producer as ExtProducer;
@@ -18,9 +18,21 @@ use M6Web\Bundle\AmqpBundle\Amqp\Producer as ExtProducer;
  */
 class ProducerBench
 {
-    private $exchangeName = 'bench_exchange';
+    use BenchTrait;
 
+    /**
+     * @var string
+     */
+    private $exchangeName = 'bench_exchange';
+    /**
+     * @var string
+     */
     private $queueName = 'bench_queue';
+
+    public function cleanup()
+    {
+        $this->deleteQueue($this->queueName, $this->exchangeName);
+    }
 
     public function keepAlive()
     {
@@ -64,25 +76,6 @@ class ProducerBench
         ];
     }
 
-    public function cleanup()
-    {
-        /** @var AbstractConnection $conn */
-        $conn = new AMQPStreamConnection(HOST, PORT, USER, PASS, VHOST);
-        $ch = $conn->channel();
-
-        $ch->queue_delete($this->queueName);
-        $ch->exchange_delete($this->exchangeName);
-
-        //redeclare to not benchmark rabbitmq creation of queue
-        $ch->queue_declare($this->queueName, false, true, false, false);
-        $ch->exchange_declare($this->exchangeName, 'direct', false, true, false);
-
-        $ch->queue_bind($this->queueName, $this->exchangeName);
-
-        $ch->close();
-        $conn->close();
-    }
-
     /**
      * @ParamProviders({"messageLength", "keepAlive", "messagesCount"})
      *
@@ -91,7 +84,7 @@ class ProducerBench
     public function benchStreamConnection($params)
     {
         $conn = new AMQPStreamConnection(HOST, PORT, USER, PASS, VHOST, false, 'AMQPLAIN', null, 'en_US', 3, 3, null, $params['alive']);
-        $this->produceWithLibConnection($conn, $params);
+        $this->produceWithLibConnection($conn, $params['length'], $params['messages']);
     }
 
     /**
@@ -102,7 +95,7 @@ class ProducerBench
     public function benchSocketConnection($params)
     {
         $conn = new AMQPSocketConnection(HOST, PORT, USER, PASS, VHOST, false, 'AMQPLAIN', null, 'en_US', 3, $params['alive']);
-        $this->produceWithLibConnection($conn, $params);
+        $this->produceWithLibConnection($conn, $params['length'], $params['messages']);
     }
 
     /**
@@ -258,32 +251,6 @@ class ProducerBench
         }
 
         $conn->disconnect();
-    }
-
-    /**
-     * @param AbstractConnection $conn
-     * @param array              $params
-     */
-    private function produceWithLibConnection(AbstractConnection $conn, $params)
-    {
-        $ch = $conn->channel();
-
-        $ch->queue_declare($this->queueName, false, true, false, false);
-        $ch->exchange_declare($this->exchangeName, 'direct', false, true, false);
-
-        $ch->queue_bind($this->queueName, $this->exchangeName);
-
-        $body = 'a';
-        for ($i = 0; $i < $params['length']; $i++) {
-            $body .= ord($i % 255);
-        }
-
-        for ($i = 0; $i < $params['messages']; $i++) {
-            $ch->basic_publish(new AMQPMessage($body), $this->exchangeName);
-        }
-
-        $ch->close();
-        $conn->close();
     }
 
     private function produceWithLibConnectionViaBundle(AbstractConnection $conn, $params)

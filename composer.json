@@ -9,6 +9,9 @@
             "email": "aa.vasilenko@gmail.com"
         }
     ],
+    "autoload": {
+        "psr-4": {"Insomnia\\Benchmark\\": "benchmark/"}
+    },
     "minimum-stability": "stable",
     "require": {
         "phpbench/phpbench": "^0.12.2",
