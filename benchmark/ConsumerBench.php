@@ -1,5 +1,6 @@
 <?php
 
+use Bunny\Client;
 use Insomnia\Benchmark\BenchTrait;
 use PhpAmqpLib\Connection\AbstractConnection;
 use PhpAmqpLib\Connection\AMQPSocketConnection;
@@ -64,6 +65,18 @@ class ConsumerBench
         ];
     }
 
+    public function tcpNoDelay()
+    {
+        return [
+            [
+                'tcp_nodelay' => 0,
+            ],
+            [
+                'tcp_nodelay' => 1,
+            ],
+        ];
+    }
+
     /**
      * @ParamProviders({"keepAlive", "messagesCount", "messageLength"})
      *
@@ -76,7 +89,7 @@ class ConsumerBench
     }
 
     /**
-     * @ParamProviders({"keepAlive"})
+     * @ParamProviders({"keepAlive", "messagesCount", "messageLength"})
      *
      * @param array $params
      */
@@ -84,6 +97,35 @@ class ConsumerBench
     {
         $conn = new AMQPSocketConnection(HOST, PORT, USER, PASS, VHOST, false, 'AMQPLAIN', null, 'en_US', 3, 3, null, $params['alive']);
         $this->consumeWithLibraryConnection($conn, $params);
+    }
+
+    /**
+     * @ParamProviders({"messageLength", "messagesCount", "tcpNoDelay"})
+     *
+     * @param array $params
+     */
+    public function benchBunnyConnection($params)
+    {
+        $connection = [
+            'host'      => HOST,
+            'vhost'     => VHOST,
+            'user'      => USER,
+            'password'  => PASS,
+            'tcp_nodelay' => $params['tcp_nodelay'],
+        ];
+
+        $bunny = new Client($connection);
+        $bunny->connect();
+
+        $channel = $bunny->channel();
+        $channel->queueDeclare($this->queueName, false, true);
+        $noop = function(){};
+
+        for ($i = 0; $i < $params['messages']; $i++) {
+            $channel->consume($noop);
+        }
+
+        $bunny->disconnect();
     }
 
     /**

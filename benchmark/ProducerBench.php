@@ -76,6 +76,18 @@ class ProducerBench
         ];
     }
 
+    public function tcpNoDelay()
+    {
+        return [
+            [
+                'tcp_nodelay' => 0,
+            ],
+            [
+                'tcp_nodelay' => 1,
+            ],
+        ];
+    }
+
     /**
      * @ParamProviders({"messageLength", "keepAlive", "messagesCount"})
      *
@@ -141,7 +153,7 @@ class ProducerBench
     }
 
     /**
-     * @ParamProviders({"messageLength", "messagesCount"})
+     * @ParamProviders({"messageLength", "messagesCount", "tcpNoDelay"})
      *
      * @param array $params
      */
@@ -152,6 +164,7 @@ class ProducerBench
             'vhost'     => VHOST,
             'user'      => USER,
             'password'  => PASS,
+            'tcp_nodelay' => $params['tcp_nodelay'],
         ];
 
         $bunny = new Client($connection);
