@@ -1,7 +1,7 @@
 # php-amqp-benchmark
 Benchmark of available amqp libraries in PHP using phpbench. Right now supports [php-amqplib](https://github.com/php-amqplib/php-amqplib), [amqp-ext](https://github.com/pdezwart/php-amqp) + symfony bundles for it.
 
-Idea of this benchmark came from real production usage. We have noticed that php-amqplib took ~50ms to push a message. 
+Idea of this benchmark came from real production usage. We have noticed that php-amqplib took ~50ms to push a message.
 Consumer benchmarks are also included but not that fine grained.
 
 ## How to run
@@ -9,13 +9,13 @@ Consumer benchmarks are also included but not that fine grained.
 Benchmark requires docker + make. To run benchmarks:
 
 * `make`
- 
-That's it! 
+
+That's it!
 
 ## Under hood
 
 `make` does following:
-* build php image based on 7.0.12
+* build php image based on 7.0.*
 * run `composer install` in docker
 * start rabbitmq instance in docker
 * run benchmarks
@@ -24,12 +24,12 @@ That's it!
 If there was some error and rabbitmq docker instance didn't stop, run `make stop-docker`. Check `Makefile` for detailed information.
 
 Current benchmark cases reflect production use in our company: 1 big message pushed per request. To adopt benchmarks for own cases update `ProducerBench::messagesCount()` and `ProducerBench::messageLength()`
- 
+
 ## Results
 
 Running with 1000 revs and 5 iterations on idle server in docker
 
-`ProducerBench` on php 7.0.12
+`ProducerBench` on PHP 7.0.*
 ```
 +---------------+-----------------------------------+--------+---------------------------------------------+------+-----+-------------+--------------+--------------+--------------+--------------+-----------+--------+---------+
 | benchmark     | subject                           | groups | params                                      | revs | its | mem_peak    | best         | mean         | mode         | worst        | stdev     | rstdev | diff    |
@@ -52,7 +52,7 @@ Running with 1000 revs and 5 iterations on idle server in docker
 +---------------+-----------------------------------+--------+---------------------------------------------+------+-----+-------------+--------------+--------------+--------------+--------------+-----------+--------+---------+
 ```
 
-`ConsumerBench` on php 7.0.12
+`ConsumerBench` on PHP 7.0.*
 ```
 +---------------+--------------+--------+---------------------------------------------------------------+------+-----+-------------+--------------+--------------+--------------+--------------+-----------+--------+---------+
 | benchmark     | subject      | groups | params                                                        | revs | its | mem_peak    | best         | mean         | mode         | worst        | stdev     | rstdev | diff    |
