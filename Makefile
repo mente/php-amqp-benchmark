@@ -18,7 +18,7 @@ benchmark:
 	./vendor/bin/phpbench run benchmark/ConsumerBench.php --revs=$(REVS) --iterations=$(ITERATIONS) --report=$(REPORT)
 
 build:
-	docker build -t rabbitmq-benchmark .
+	docker build -t rabbitmq-benchmark --no-cache --rm .
 	docker run --rm -v `pwd`:/app composer/composer --ignore-platform-reqs install
 
 start-docker:

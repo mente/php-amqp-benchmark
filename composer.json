@@ -10,14 +10,16 @@
         }
     ],
     "autoload": {
-        "psr-4": {"Insomnia\\Benchmark\\": "benchmark/"}
+        "psr-4": {
+            "Insomnia\\Benchmark\\": "benchmark/"
+        }
     },
     "minimum-stability": "stable",
     "require": {
-        "phpbench/phpbench": "^0.12.2",
+        "phpbench/phpbench": "^0.13",
         "php-amqplib/php-amqplib": "^2.6",
-        "php-amqplib/rabbitmq-bundle": "^1.11",
-        "m6web/amqp-bundle": "^2.2",
-        "bunny/bunny": "^0.2.4"
+        "php-amqplib/rabbitmq-bundle": "^1.12",
+        "m6web/amqp-bundle": "^2.4",
+        "bunny/bunny": "^0.2"
     }
 }
